@@ -1,0 +1,30 @@
+---
+name: "Publish Helm Chart"
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish-helm-chart:
+    name: Build and Push Helm Chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install Helm
+        uses: azure/setup-helm@v5
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Package Chart
+        run: helm package charts/vsphere-eventlogger --version ${{ github.ref_name }} --app-version ${{ github.ref_name }}
+
+      - name: Push Chart
+        run: helm push vsphere-eventlogger-${{ github.ref_name }}.tgz oci://ghcr.io/${{ github.repository_owner }}/charts

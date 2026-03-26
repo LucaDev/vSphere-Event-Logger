@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "vsphere-eventlogger.fullname" . }}
+  labels:
+    {{- include "vsphere-eventlogger.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "vsphere-eventlogger.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "vsphere-eventlogger.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: GOVMOMI_URL
+              value: {{ .Values.govmomi.url | quote }}
+          {{- if .Values.govmomi.existingSecret }}
+            - name: GOVMOMI_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.govmomi.existingSecret }}
+                  key: username
+            - name: GOVMOMI_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.govmomi.existingSecret }}
+                  key: password
+          {{- else }}
+            - name: GOVMOMI_USERNAME
+              value: {{ .Values.govmomi.username | quote }}
+            - name: GOVMOMI_PASSWORD
+              value: {{ .Values.govmomi.password | quote }}
+          {{- end }}
+          {{- if .Values.govmomi.insecure }}
+            - name: GOVMOMI_INSECURE
+              value: "true"
+          {{- end }}
+          {{- if .Values.redactUsername }}
+            - name: REDACT_USERNAME
+              value: "true"
+          {{- end }}
+          {{- if .Values.govmomi.tlsCaCert.existingSecret }}
+            - name: GOVMOMI_TLS_CA_CERTS
+              value: "/etc/ssl/vcenter/{{ .Values.govmomi.tlsCaCert.key }}"
+          {{- end }}
+          {{- if .Values.govmomi.tlsCaCert.existingSecret }}
+          volumeMounts:
+            - name: ca-cert
+              mountPath: /etc/ssl/vcenter
+              readOnly: true
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- if .Values.govmomi.tlsCaCert.existingSecret }}
+      volumes:
+        - name: ca-cert
+          secret:
+            secretName: {{ .Values.govmomi.tlsCaCert.existingSecret }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

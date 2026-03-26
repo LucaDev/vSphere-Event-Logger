@@ -94,4 +94,23 @@ spec:
           secretName: vcenter-ca-secret
 ```
 
-A helm chart will follow at some point
+### Using Helm
+
+A Helm chart is available to easily deploy the application, published as an OCI artifact to GitHub Container Registry:
+
+```bash
+helm install my-logger oci://ghcr.io/lucadev/charts/vsphere-eventlogger \
+  --version 0.1.0 \
+  --set govmomi.url="https://vcenter.local/sdk" \
+  --set govmomi.username="Administrator@vsphere.local" \
+  --set govmomi.password="Secret123!"
+```
+
+Alternatively, using an existing secret for credentials:
+
+```bash
+helm install my-logger oci://ghcr.io/lucadev/charts/vsphere-eventlogger \
+  --version 0.1.0 \
+  --set govmomi.url="https://vcenter.local/sdk" \
+  --set govmomi.existingSecret="vcenter-credentials"
+```

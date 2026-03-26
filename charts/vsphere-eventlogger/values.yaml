@@ -1,0 +1,56 @@
+# Default values for vsphere-eventlogger.
+image:
+  repository: ghcr.io/lucadev/vsphere-eventlogger
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+govmomi:
+  # The vCenter SDK URL
+  url: "https://vcenter.local/sdk"
+  # Provide username/password directly, or use existingSecret
+  username: ""
+  password: ""
+  # Alternatively, specify the name of an existing secret with 'username' and 'password' keys
+  existingSecret: ""
+  # Set to true to bypass TLS verification
+  insecure: false
+  # Mount custom CA certificate
+  tlsCaCert:
+    existingSecret: "" # Secret containing the ca config
+    key: "ca.crt" # Key inside the secret
+
+# Set to true to compute a SHA-256 hash of usernames
+redactUsername: false
+
+nameOverride: ""
+fullnameOverride: ""
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  fsGroup: 65534
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+resources:
+  limits:
+    cpu: 50m
+    memory: 32Mi
+  requests:
+    cpu: 10m
+    memory: 16Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

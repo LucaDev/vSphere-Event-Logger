@@ -1,0 +1,7 @@
+apiVersion: v2
+name: vsphere-eventlogger
+description: A Helm chart for deploying vsphere-eventlogger
+
+type: application
+version: 0.1.0
+appVersion: "latest"
