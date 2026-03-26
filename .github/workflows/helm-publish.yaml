@@ -27,4 +27,6 @@ jobs:
         run: helm package charts/vsphere-eventlogger --version ${{ github.ref_name }} --app-version ${{ github.ref_name }}
 
       - name: Push Chart
-        run: helm push vsphere-eventlogger-${{ github.ref_name }}.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+        run: |
+          OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          helm push vsphere-eventlogger-${{ github.ref_name }}.tgz oci://ghcr.io/$OWNER/charts
