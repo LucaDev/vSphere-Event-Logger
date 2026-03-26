@@ -18,9 +18,9 @@ build_binary:
 
 build_container:
   stage: docker
-  image: docker:24.0.5
+  image: docker:24.0.9
   services:
-    - docker:24.0.5-dind
+    - docker:24.0.9-dind
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - docker build -t $DOCKER_IMAGE:$CI_COMMIT_SHA -t $DOCKER_IMAGE:latest .
